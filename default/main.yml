@@ -1,0 +1,29 @@
+---
+
+  - hosts: all
+    sudo: yes
+
+    tasks:
+
+    - name: Update using apt-get
+      apt: update_cache=yes
+      when: ansible_os_family == "Ubuntu"
+
+    - name: Update using yum
+      yum: update_cache=yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Run Docker Script
+      shell: curl -sSL https://get.docker.com/ | sh
+
+    - name: Give current user sudo to docker
+      shell: usermod -aG docker ${USER}
+
+    - name: Install rancher
+      shell: docker stop RancherCont
+      shell: docker rm RancherCont
+      shell: docker run -d --name=RancherCont --restart=always -p 8080:8080 rancher/server
+
+    handlers:
+     - name: restart docker
+       service: name=docker state=restarted
